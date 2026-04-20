@@ -4,7 +4,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
-import Demo from "@/pages/demo";
+import Articles from "@/pages/articles";
+import Login from "@/pages/login";
+import AdminDashboard from "@/pages/admin/dashboard";
+import RSSFeeds from "@/pages/admin/rss-feeds";
+import Categories from "@/pages/admin/categories";
+import AdminArticles from "@/pages/admin/articles";
 
 const queryClient = new QueryClient();
 
@@ -12,7 +17,12 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/demo" component={Demo} />
+      <Route path="/articles" component={Articles} />
+      <Route path="/login" component={Login} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/rss-feeds" component={RSSFeeds} />
+      <Route path="/admin/categories" component={Categories} />
+      <Route path="/admin/articles" component={AdminArticles} />
       <Route component={NotFound} />
     </Switch>
   );
