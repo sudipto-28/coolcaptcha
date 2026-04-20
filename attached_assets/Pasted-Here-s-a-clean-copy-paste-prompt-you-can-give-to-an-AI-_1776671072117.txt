@@ -1,0 +1,179 @@
+Here’s a **clean, copy-paste prompt** you can give to an AI site builder.
+It’s structured so it actually produces what you want (not generic fluff):
+
+---
+
+## PROMPT
+
+Build a **modern, high-conversion landing page website** for a CAPTCHA SaaS service called **CoolCaptcha.com**.
+
+### 1. Overall Style
+
+* Clean, modern SaaS design (similar to Stripe / Cloudflare style)
+* One-page **parallax scrolling layout**
+* Dark + light gradient theme
+* Subtle animations (scroll fade, hover effects)
+* Fully responsive (desktop + mobile)
+
+---
+
+### 2. Hero Section (Above the Fold)
+
+* Headline:
+  **"Stop Bots. Keep Real Users."**
+* Subheadline:
+  "Advanced CAPTCHA protection with dynamic challenges and content-aware security."
+* CTA buttons:
+
+  * "Get Started"
+  * "Try Demo"
+* Visual:
+
+  * Animated CAPTCHA widget mockup
+
+---
+
+### 3. What the Service Does
+
+Explain clearly:
+
+* Webmasters can generate a **JavaScript embed tag**
+* The script loads a **dedicated CAPTCHA** for their website
+* Each CAPTCHA is:
+
+  * Domain-specific
+  * Dynamic (changes behavior based on traffic patterns)
+  * Resistant to bots and automation
+
+Include sample embed code block:
+
+```html
+<script src="https://coolcaptcha.com/api.js" data-sitekey="YOUR_KEY"></script>
+```
+
+---
+
+### 4. Benefits Section
+
+Use icons + short bullets:
+
+* Block bots & scrapers
+* Protect forms & login pages
+* Smart adaptive challenges
+* Frictionless for real users
+* Content-aware validation system
+* Fast and lightweight
+
+---
+
+### 5. Demo Section (IMPORTANT – MUST BE INTERACTIVE UI MOCK)
+
+Create a working UI simulation (frontend only):
+
+#### Step 1:
+
+Input field:
+
+* Placeholder: "Enter target URL (e.g. [https://example.com](https://example.com))"
+* Button: "Generate CAPTCHA"
+
+#### Step 2:
+
+Show a **mock CAPTCHA page UI**:
+
+* Puzzle-style CAPTCHA (slider / image select / checkbox)
+* Button: "Solve CAPTCHA"
+
+#### Step 3:
+
+After solving:
+
+* Simulate redirect message:
+  "Verification complete. Redirecting..."
+
+---
+
+### 6. CAPTCHA Page Layout (DEMO UI DESIGN)
+
+Design a section that visually represents the CAPTCHA page:
+
+* Center:
+  CAPTCHA box
+
+* Below CAPTCHA:
+  "Relevant Content Feed"
+
+Show **blog-style cards** with:
+
+* Title
+* Image
+* Short excerpt
+
+Explain via text:
+
+* "Webmasters can choose what type of content appears here (tech, finance, sports, etc.) via RSS feeds"
+
+---
+
+### 7. How It Works Section
+
+Simple 3-step layout:
+
+1. Generate your site key
+2. Add JS snippet to your site
+3. Protect your users instantly
+
+---
+
+### 8. Advanced Features Section
+
+Highlight:
+
+* Dynamic CAPTCHA difficulty
+* Behavioral analysis
+* Anti-bypass protection
+* API integration
+* Custom content feeds (RSS-based)
+* Redirect after verification
+
+---
+
+### 9. Call to Action Section
+
+* Headline: "Start Protecting Your Website Today"
+* Buttons:
+
+  * "Create Free API Key"
+  * "View Documentation"
+
+---
+
+### 10. Footer
+
+* Links:
+
+  * Docs
+  * API
+  * Pricing
+  * Contact
+* Small note:
+  "© CoolCaptcha.com"
+
+---
+
+### 11. Technical Requirements
+
+* Use clean HTML, CSS, and minimal JS
+* No backend required (demo simulation only)
+* Smooth animations
+* Fast loading
+
+---
+
+If you want, I can next:
+
+* generate the **actual HTML/CSS/JS code**
+* design the **captcha logic + API structure**
+* or write the **dashboard (generate keys, analytics, etc.)**
+
+Just tell me 👍
