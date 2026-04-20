@@ -47,7 +47,7 @@ const Navbar = () => {
         <nav className="hidden md:flex items-center gap-8">
           <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-white transition-colors">How it Works</a>
           <a href="#features" className="text-sm text-muted-foreground hover:text-white transition-colors">Features</a>
-          <a href="#demo" className="text-sm text-muted-foreground hover:text-white transition-colors">Demo</a>
+          <Link href="/demo" className="text-sm text-muted-foreground hover:text-white transition-colors">Demo</Link>
           <a href="#pricing" className="text-sm text-muted-foreground hover:text-white transition-colors">Pricing</a>
         </nav>
 
@@ -77,7 +77,7 @@ const Navbar = () => {
           >
             <a href="#how-it-works" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>How it Works</a>
             <a href="#features" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>Features</a>
-            <a href="#demo" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>Demo</a>
+            <Link href="/demo" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>Demo</Link>
             <a href="#pricing" className="text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
             <div className="h-px bg-white/10 my-2" />
             <Button variant="outline" className="w-full justify-center">Sign In</Button>
@@ -122,9 +122,11 @@ const HeroSection = () => {
               <Button size="lg" className="w-full sm:w-auto text-base h-14 px-8 bg-primary text-primary-foreground hover:bg-primary/90">
                 Get Started <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto text-base h-14 px-8 border-white/20 hover:bg-white/5">
-                <PlayCircle className="mr-2 w-4 h-4" /> Try Demo
-              </Button>
+              <Link href="/demo">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto text-base h-14 px-8 border-white/20 hover:bg-white/5">
+                  <PlayCircle className="mr-2 w-4 h-4" /> Try Demo
+                </Button>
+              </Link>
             </div>
             
             <div className="mt-8 flex items-center gap-4 justify-center lg:justify-start text-sm text-muted-foreground">
@@ -344,272 +346,6 @@ const BenefitsSection = () => {
   );
 };
 
-const InteractiveDemoSection = () => {
-  const [step, setStep] = useState(1);
-  const [url, setUrl] = useState("");
-  const [sliderValue, setSliderValue] = useState(0);
-  const [verifying, setVerifying] = useState(false);
-
-  const handleGenerate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!url) return;
-    setStep(2);
-  };
-
-  const handleVerify = () => {
-    if (sliderValue < 95) return;
-    setVerifying(true);
-    setTimeout(() => {
-      setStep(3);
-      setVerifying(false);
-    }, 1500);
-  };
-
-  return (
-    <section id="demo" className="py-24 relative overflow-hidden">
-      <div className="absolute top-1/2 right-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px] pointer-events-none" />
-      
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="flex flex-col lg:flex-row gap-12 items-center">
-          <div className="flex-1 max-w-xl">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Try It Yourself</h2>
-            <p className="text-muted-foreground text-lg mb-8">
-              Experience the seamless verification process. Our dynamic challenges ensure real users get through quickly while bots hit a brick wall.
-            </p>
-            
-            <div className="space-y-6">
-              <div className={`p-4 rounded-lg border transition-all ${step === 1 ? 'bg-primary/5 border-primary/30' : 'bg-white/5 border-white/10 opacity-50'}`}>
-                <h3 className="font-medium mb-2">1. Configure Target</h3>
-                <p className="text-sm text-muted-foreground mb-4">Enter the domain you want to protect.</p>
-                <form onSubmit={handleGenerate} className="flex gap-2">
-                  <input 
-                    type="url" 
-                    required
-                    placeholder="https://example.com" 
-                    className="flex-1 bg-black/50 border border-white/20 rounded-md px-4 py-2 text-sm focus:outline-none focus:border-primary"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    disabled={step !== 1}
-                  />
-                  <Button type="submit" disabled={step !== 1 || !url} className="bg-primary text-primary-foreground">
-                    Generate
-                  </Button>
-                </form>
-              </div>
-
-              <div className={`p-4 rounded-lg border transition-all ${step === 2 ? 'bg-primary/5 border-primary/30' : 'bg-white/5 border-white/10 opacity-50'}`}>
-                <h3 className="font-medium mb-2">2. Solve Challenge</h3>
-                <p className="text-sm text-muted-foreground">Complete the verification puzzle to proceed.</p>
-              </div>
-
-              <div className={`p-4 rounded-lg border transition-all ${step === 3 ? 'bg-primary/5 border-primary/30' : 'bg-white/5 border-white/10 opacity-50'}`}>
-                <h3 className="font-medium mb-2">3. Verification Complete</h3>
-                <p className="text-sm text-muted-foreground">User is securely verified and redirected.</p>
-              </div>
-            </div>
-            
-            {step === 3 && (
-              <Button 
-                variant="outline" 
-                className="mt-8"
-                onClick={() => { setStep(1); setUrl(""); setSliderValue(0); }}
-              >
-                Reset Demo
-              </Button>
-            )}
-          </div>
-          
-          <div className="flex-1 w-full flex justify-center">
-            <div className="w-full max-w-sm">
-              <AnimatePresence mode="wait">
-                {step === 1 && (
-                  <motion.div 
-                    key="step1"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="glass-panel p-8 rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center aspect-square"
-                  >
-                    <ShieldCheck className="w-16 h-16 text-muted-foreground mb-4 opacity-50" />
-                    <p className="text-muted-foreground">Waiting for configuration...</p>
-                  </motion.div>
-                )}
-
-                {step === 2 && (
-                  <motion.div 
-                    key="step2"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="glass-panel p-6 rounded-2xl border border-white/10 bg-[#121216] shadow-2xl"
-                  >
-                    <div className="flex items-center justify-between mb-6">
-                      <span className="text-sm font-medium">Security Check</span>
-                      <div className="w-6 h-6 bg-primary rounded flex items-center justify-center text-[10px] text-primary-foreground font-bold">C</div>
-                    </div>
-                    
-                    <div className="bg-black/40 border border-white/5 rounded-lg p-4 mb-6">
-                      <p className="text-sm text-center mb-4">Slide to complete the puzzle</p>
-                      
-                      <div className="relative h-32 bg-gray-800 rounded overflow-hidden mb-4 border border-white/10">
-                        {/* Puzzle background pattern */}
-                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjMWYyOTM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDBMOCA4Wk04IDBMMCA4WiIgc3Ryb2tlPSIjMzM0MTU1IiBzdHJva2Utd2lkdGg9IjEiPjwvcGF0aD4KPC9zdmc+')] opacity-50" />
-                        
-                        {/* Puzzle hole */}
-                        <div className="absolute top-8 right-8 w-16 h-16 bg-black/60 rounded shadow-inner" />
-                        
-                        {/* Puzzle piece */}
-                        <motion.div 
-                          className="absolute top-8 left-2 w-16 h-16 bg-primary/80 backdrop-blur rounded border border-white/30 shadow-lg flex items-center justify-center"
-                          style={{ left: `calc(${sliderValue}% * 0.7 + 8px)` }}
-                        >
-                          <Lock className="w-6 h-6 text-white/70" />
-                        </motion.div>
-                      </div>
-                      
-                      <input 
-                        type="range" 
-                        min="0" 
-                        max="100" 
-                        value={sliderValue}
-                        onChange={(e) => setSliderValue(Number(e.target.value))}
-                        className="w-full accent-primary"
-                        disabled={verifying}
-                      />
-                    </div>
-                    
-                    <Button 
-                      className="w-full bg-primary text-primary-foreground"
-                      onClick={handleVerify}
-                      disabled={sliderValue < 95 || verifying}
-                    >
-                      {verifying ? (
-                        <div className="flex items-center gap-2">
-                          <motion.div 
-                            animate={{ rotate: 360 }}
-                            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                            className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
-                          />
-                          Verifying...
-                        </div>
-                      ) : "Solve CAPTCHA"}
-                    </Button>
-                  </motion.div>
-                )}
-
-                {step === 3 && (
-                  <motion.div 
-                    key="step3"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="glass-panel p-8 rounded-2xl border border-green-500/30 flex flex-col items-center justify-center text-center aspect-square bg-green-500/5"
-                  >
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", bounce: 0.5 }}
-                    >
-                      <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
-                        <CheckCircle2 className="w-10 h-10 text-green-500" />
-                      </div>
-                    </motion.div>
-                    <h3 className="text-xl font-bold mb-2">Verification Complete</h3>
-                    <p className="text-muted-foreground text-sm">Redirecting to {url}...</p>
-                    
-                    <motion.div 
-                      className="w-full h-1 bg-white/10 rounded-full mt-6 overflow-hidden"
-                    >
-                      <motion.div 
-                        className="h-full bg-green-500"
-                        initial={{ width: "0%" }}
-                        animate={{ width: "100%" }}
-                        transition={{ duration: 2 }}
-                      />
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const CaptchaPreviewSection = () => {
-  return (
-    <section className="py-24 bg-black/40 border-y border-white/5 relative">
-      <div className="container mx-auto px-6">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Content-Rich Verification</h2>
-          <p className="text-muted-foreground text-lg">
-            Turn your CAPTCHA page into an engagement opportunity. Webmasters choose what content appears via RSS feeds (tech, finance, sports, etc.).
-          </p>
-        </div>
-
-        <div className="max-w-4xl mx-auto rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-background">
-          {/* Browser Header */}
-          <div className="bg-black/60 px-4 py-3 flex items-center gap-4 border-b border-white/5">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500/80" />
-              <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-              <div className="w-3 h-3 rounded-full bg-green-500/80" />
-            </div>
-            <div className="flex-1 bg-white/5 rounded px-3 py-1 text-xs text-center text-muted-foreground font-mono flex items-center justify-center gap-2">
-              <Lock size={10} /> https://verify.coolcaptcha.com/challenge
-            </div>
-          </div>
-          
-          {/* Page Content */}
-          <div className="p-8 md:p-12 flex flex-col items-center bg-gradient-to-b from-background to-background/50">
-            {/* The CAPTCHA Box */}
-            <div className="w-full max-w-md bg-[#121216] border border-white/10 rounded-xl p-6 mb-12 shadow-xl">
-               <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="text-primary w-5 h-5" />
-                    <span className="font-medium">Security Check</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">coolcaptcha.com</div>
-                </div>
-                <div className="bg-black/50 border border-white/5 rounded-lg p-4 text-center">
-                   <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-                   <p className="text-sm">Verifying browser securely...</p>
-                </div>
-            </div>
-
-            {/* Content Feed */}
-            <div className="w-full">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="h-px bg-white/10 flex-1" />
-                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Latest News</span>
-                <div className="h-px bg-white/10 flex-1" />
-              </div>
-              
-              <div className="grid md:grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="group cursor-pointer">
-                    <div className="aspect-video bg-white/5 rounded-lg mb-3 overflow-hidden relative">
-                      <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="w-full h-full flex items-center justify-center">
-                        <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
-                           <Zap className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="h-4 bg-white/10 rounded w-full mb-2 group-hover:bg-white/20 transition-colors" />
-                    <div className="h-4 bg-white/10 rounded w-2/3 group-hover:bg-white/20 transition-colors" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
 
 const AdvancedFeaturesSection = () => {
   const features = [
@@ -746,8 +482,6 @@ export default function Home() {
         <StatsSection />
         <HowItWorksSection />
         <BenefitsSection />
-        <InteractiveDemoSection />
-        <CaptchaPreviewSection />
         <AdvancedFeaturesSection />
         <CtaSection />
       </main>
