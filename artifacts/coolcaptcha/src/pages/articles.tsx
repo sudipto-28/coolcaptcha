@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ArticleFeed } from "@/components/articles/article-feed";
 import { ArticleDetail } from "@/components/articles/article-detail";
 import { Layout } from "@/components/layout/layout";
+import { Footer } from "@/components/footer";
 import { ApiArticle } from "@/components/articles/article-data";
 
 // ===================== CAPTCHA SHELL =====================
@@ -630,25 +631,7 @@ export default function Articles() {
       </section>
 
       {/* Footer */}
-      <footer className="mt-16 bg-black py-10 border-t border-white/10">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs">C</div>
-              <span className="font-bold tracking-tight text-white">CoolCaptcha</span>
-            </Link>
-            <div className="flex gap-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-primary transition-colors">Documentation</a>
-              <a href="#" className="hover:text-primary transition-colors">API Reference</a>
-              <a href="#" className="hover:text-primary transition-colors">Pricing</a>
-              <a href="#" className="hover:text-primary transition-colors">Contact</a>
-            </div>
-          </div>
-          <div className="mt-6 pt-6 border-t border-white/5 text-xs text-muted-foreground text-center">
-            © 2025 CoolCaptcha.com. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </Layout>
   );
 }

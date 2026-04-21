@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/layout/layout";
+import { Footer } from "@/components/footer";
 
 // --- Components ---
 
@@ -366,38 +367,6 @@ const CtaSection = () => {
         </div>
       </div>
     </section>
-  );
-};
-
-const Footer = () => {
-  return (
-    <footer className="bg-black py-12 border-t border-white/10">
-      <div className="container mx-auto px-6">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs">
-              C
-            </div>
-            <span className="font-bold tracking-tight text-white">CoolCaptcha</span>
-          </div>
-          
-          <div className="flex gap-6 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-primary transition-colors">Documentation</a>
-            <a href="#" className="hover:text-primary transition-colors">API Reference</a>
-            <a href="#" className="hover:text-primary transition-colors">Pricing</a>
-            <a href="#" className="hover:text-primary transition-colors">Contact</a>
-          </div>
-        </div>
-        
-        <div className="mt-8 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
-          <p>© 2025 CoolCaptcha.com. All rights reserved.</p>
-          <div className="flex gap-4">
-            <a href="#" className="hover:text-white">Privacy Policy</a>
-            <a href="#" className="hover:text-white">Terms of Service</a>
-          </div>
-        </div>
-      </div>
-    </footer>
   );
 };
 
