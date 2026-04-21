@@ -5,6 +5,7 @@ import {
   Rss,
   FolderTree,
   FileText,
+  Link as LinkIcon,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -17,6 +18,7 @@ const menuItems = [
   { icon: Rss, label: "RSS Feeds", href: "/admin/rss-feeds" },
   { icon: FolderTree, label: "Categories", href: "/admin/categories" },
   { icon: FileText, label: "Articles", href: "/admin/articles" },
+  { icon: LinkIcon, label: "Redirect URLs", href: "/admin/redirect-urls" },
 ];
 
 interface AdminSidebarProps {

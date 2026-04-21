@@ -159,6 +159,21 @@ export const articleImportsTable = pgTable(
   ],
 );
 
+export const redirectUrlsTable = pgTable(
+  "RedirectUrl",
+  {
+    id: id(),
+    name: text("name"),
+    redirectUrl: text("redirectUrl").notNull(),
+    isActive: boolean("isActive").notNull().default(true),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (table) => [
+    index("RedirectUrl_isActive_idx").on(table.isActive),
+  ],
+);
+
 export const usersRelations = relations(usersTable, ({ many }) => ({
   articles: many(articlesTable),
 }));
@@ -228,6 +243,11 @@ export const insertArticleImportSchema = createInsertSchema(
   id: true,
   fetchedAt: true,
 });
+export const insertRedirectUrlSchema = createInsertSchema(redirectUrlsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof usersTable.$inferSelect;
@@ -243,3 +263,6 @@ export type Article = typeof articlesTable.$inferSelect;
 
 export type InsertArticleImport = z.infer<typeof insertArticleImportSchema>;
 export type ArticleImport = typeof articleImportsTable.$inferSelect;
+
+export type InsertRedirectUrl = z.infer<typeof insertRedirectUrlSchema>;
+export type RedirectUrl = typeof redirectUrlsTable.$inferSelect;

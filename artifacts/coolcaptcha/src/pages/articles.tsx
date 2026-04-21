@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import {
@@ -270,13 +270,90 @@ const DrawCaptcha = ({ onSuccess, onRefresh }: { onSuccess: () => void; onRefres
   );
 };
 
+// ===================== 3. ODD ONE OUT CAPTCHA =====================
+
+const ODD_ICONS = [
+  { emoji: "🐶", label: "dog" },
+  { emoji: "🐱", label: "cat" },
+  { emoji: "🐸", label: "frog" },
+  { emoji: "🐼", label: "panda" },
+  { emoji: "🦊", label: "fox" },
+  { emoji: "🐨", label: "koala" },
+  { emoji: "🐯", label: "tiger" },
+  { emoji: "🦁", label: "lion" },
+  { emoji: "🐮", label: "cow" },
+  { emoji: "🐷", label: "pig" },
+];
+
+function generateOddOne() {
+  const shuffled = [...ODD_ICONS].sort(() => Math.random() - 0.5);
+  const dominantIcon = shuffled[0];
+  const uniqueIcon = shuffled[1];
+  const uniquePos = Math.floor(Math.random() * 9);
+  const grid = Array(9)
+    .fill(null)
+    .map((_, i) => (i === uniquePos ? { ...uniqueIcon } : { ...dominantIcon }));
+  return { grid, uniquePos, uniqueLabel: uniqueIcon.label };
+}
+
+const OddOneCaptcha = ({ onSuccess, onRefresh }: { onSuccess: () => void; onRefresh: () => void }) => {
+  const [data, setData] = useState(() => generateOddOne());
+  const [selected, setSelected] = useState<number | null>(null);
+  const [result, setResult] = useState<"success" | "fail" | null>(null);
+
+  const refresh = () => {
+    setData(generateOddOne());
+    setSelected(null);
+    setResult(null);
+    onRefresh();
+  };
+
+  const handleClick = (idx: number) => {
+    if (result === "success") return;
+    setSelected(idx);
+    if (idx === data.uniquePos) {
+      setResult("success");
+      setTimeout(onSuccess, 700);
+    } else {
+      setResult("fail");
+      setTimeout(() => { setSelected(null); setResult(null); }, 900);
+    }
+  };
+
+  return (
+    <CaptchaShell title="Find and click the odd one out" onRefresh={refresh}>
+      <div className="grid grid-cols-3 gap-2">
+        {data.grid.map((icon, i) => (
+          <button
+            key={i}
+            onClick={() => handleClick(i)}
+            className={`h-16 rounded-xl text-3xl flex items-center justify-center transition-all border-2 select-none ${
+              result === "success" && i === data.uniquePos
+                ? "border-green-500 bg-green-500/20 scale-95"
+                : result === "fail" && selected === i
+                ? "border-red-500 bg-red-500/20"
+                : "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 hover:scale-102"
+            }`}
+          >
+            {icon.emoji}
+          </button>
+        ))}
+      </div>
+      {result === "fail" && (
+        <p className="text-xs text-red-400 text-center mt-2 animate-pulse">That's not it — look more carefully!</p>
+      )}
+    </CaptchaShell>
+  );
+};
+
 // ===================== RANDOM CAPTCHA PICKER =====================
 
-type CaptchaKey = "match3" | "draw";
+type CaptchaKey = "match3" | "draw" | "oddone";
 
 const CAPTCHA_MAP: Record<CaptchaKey, React.FC<{ onSuccess: () => void; onRefresh: () => void }>> = {
   match3: Match3Captcha,
   draw: DrawCaptcha,
+  oddone: OddOneCaptcha,
 };
 
 const CAPTCHA_KEYS = Object.keys(CAPTCHA_MAP) as CaptchaKey[];
@@ -294,64 +371,104 @@ const RandomCaptcha = ({
   onSuccess: () => void;
   onRefresh: () => void;
 }) => {
-  const [type] = useState<CaptchaKey>(randomType);
+  const [type, setType] = useState<CaptchaKey>(randomType);
+
+  const handleRefresh = () => {
+    setType(randomType());
+    onRefresh();
+  };
+
   const Component = CAPTCHA_MAP[type];
-  return <Component key={instanceKey} onSuccess={onSuccess} onRefresh={onRefresh} />;
+  return <Component key={`${type}-${instanceKey}`} onSuccess={onSuccess} onRefresh={handleRefresh} />;
 };
 
 // ===================== SUCCESS SCREEN =====================
 
-const SuccessScreen = ({ url }: { url: string }) => (
-  <motion.div
-    key="success"
-    initial={{ opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    exit={{ opacity: 0, scale: 0.95 }}
-    className="glass-panel p-10 rounded-2xl border border-green-500/30 flex flex-col items-center justify-center text-center gap-4 bg-green-500/5"
-  >
+const SuccessScreen = ({ url }: { url: string }) => {
+  useEffect(() => {
+    if (!url) return;
+    const timer = setTimeout(() => { window.location.href = url; }, 2100);
+    return () => clearTimeout(timer);
+  }, [url]);
+
+  return (
     <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ type: "spring", bounce: 0.5 }}
-      className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center"
+      key="success"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="glass-panel p-10 rounded-2xl border border-green-500/30 flex flex-col items-center justify-center text-center gap-4 bg-green-500/5"
     >
-      <CheckCircle2 className="w-10 h-10 text-green-500" />
-    </motion.div>
-    <h3 className="text-xl font-bold">Verification Complete</h3>
-    <p className="text-sm text-muted-foreground">Redirecting to {url || "your site"}...</p>
-    <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
       <motion.div
-        className="h-full bg-green-500 rounded-full"
-        initial={{ width: "0%" }}
-        animate={{ width: "100%" }}
-        transition={{ duration: 2 }}
-      />
-    </div>
-  </motion.div>
-);
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: "spring", bounce: 0.5 }}
+        className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center"
+      >
+        <CheckCircle2 className="w-10 h-10 text-green-500" />
+      </motion.div>
+      <h3 className="text-xl font-bold">Verification Complete</h3>
+      <p className="text-sm text-muted-foreground">
+        Redirecting to <span className="text-white font-medium">{url || "your site"}</span>...
+      </p>
+      <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <motion.div
+          className="h-full bg-green-500 rounded-full"
+          initial={{ width: "0%" }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 2 }}
+        />
+      </div>
+    </motion.div>
+  );
+};
 
 // ===================== ARTICLES PAGE =====================
 
+interface RedirectUrlEntry {
+  id: string;
+  name: string | null;
+  redirectUrl: string;
+  isActive: boolean;
+}
+
 export default function Articles() {
-  const [step, setStep] = useState(1);
-  const [url, setUrl] = useState("");
+  const [step, setStep] = useState(2);
+  const [redirectTarget, setRedirectTarget] = useState("");
+  const [redirectUrls, setRedirectUrls] = useState<RedirectUrlEntry[]>([]);
   const [captchaKey, setCaptchaKey] = useState(0);
   const [selectedArticle, setSelectedArticle] = useState<ApiArticle | null>(null);
 
-  const handleGenerate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!url) return;
-    setCaptchaKey((k) => k + 1);
-    setStep(2);
+  useEffect(() => {
+    const fetchRedirectUrls = async () => {
+      try {
+        const response = await fetch("/api/redirect-urls");
+        const data: { success: boolean; data: RedirectUrlEntry[] } = await response.json();
+        if (data.success && Array.isArray(data.data)) {
+          setRedirectUrls(data.data.filter((u) => u.isActive));
+        }
+      } catch {
+        // silently ignore — redirect will just not happen
+      }
+    };
+    fetchRedirectUrls();
+  }, []);
+
+  const pickRandomRedirectUrl = () => {
+    if (redirectUrls.length === 0) return "";
+    return redirectUrls[Math.floor(Math.random() * redirectUrls.length)].redirectUrl;
   };
 
-  const handleSuccess = () => setStep(3);
+  const handleSuccess = () => {
+    setRedirectTarget(pickRandomRedirectUrl());
+    setStep(3);
+  };
 
   const handleRefresh = () => setCaptchaKey((k) => k + 1);
 
   const handleReset = () => {
-    setStep(1);
-    setUrl("");
+    setStep(2);
+    setRedirectTarget("");
     setCaptchaKey((k) => k + 1);
     setSelectedArticle(null);
   };
@@ -457,9 +574,7 @@ export default function Articles() {
                   </div>
                   <div className="flex-1 bg-white/5 rounded px-3 py-1 text-xs text-center text-muted-foreground font-mono flex items-center justify-center gap-2">
                     <Lock size={10} />
-                    {url
-                      ? `verify.coolcaptcha.com/challenge?site=${encodeURIComponent(url)}`
-                      : "verify.coolcaptcha.com/challenge"}
+                    {"verify.coolcaptcha.com/challenge"}
                   </div>
                 </div>
 
@@ -495,7 +610,7 @@ export default function Articles() {
                         </motion.div>
                       )}
 
-                      {step === 3 && <SuccessScreen url={url} />}
+                      {step === 3 && <SuccessScreen url={redirectTarget} />}
                     </AnimatePresence>
                   </div>
 

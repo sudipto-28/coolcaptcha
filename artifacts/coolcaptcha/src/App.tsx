@@ -13,6 +13,7 @@ import AdminDashboard from "@/pages/admin/dashboard";
 import RSSFeeds from "@/pages/admin/rss-feeds";
 import Categories from "@/pages/admin/categories";
 import AdminArticles from "@/pages/admin/articles";
+import RedirectUrls from "@/pages/admin/redirect-urls";
 
 setBaseUrl(import.meta.env.VITE_API_URL || "http://localhost:8020");
 
@@ -42,6 +43,11 @@ function Router() {
       <Route path="/admin/articles">
         <ProtectedRoute>
           <AdminArticles />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/redirect-urls">
+        <ProtectedRoute>
+          <RedirectUrls />
         </ProtectedRoute>
       </Route>
       <Route component={NotFound} />
