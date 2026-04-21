@@ -1,4 +1,3 @@
-import { customFetch } from "@workspace/api-client-react";
 
 export interface User {
   id: string;
@@ -27,21 +26,21 @@ export interface ApiResponse<T> {
 }
 
 export async function login(input: LoginInput): Promise<LoginResponse> {
-  const response = await customFetch<LoginResponse>("/api/auth/login", {
+  const response = await fetch("/api/auth/login", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
-
-  return response;
+  return response.json() as Promise<LoginResponse>;
 }
 
 export async function getCurrentUser(token: string): Promise<User> {
-  const response = await customFetch<ApiResponse<User>>("/api/auth/me", {
-    method: "GET",
+  const response = await fetch("/api/auth/me", {
     headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   });
-
-  return response.data;
+  const data: ApiResponse<User> = await response.json();
+  return data.data;
 }

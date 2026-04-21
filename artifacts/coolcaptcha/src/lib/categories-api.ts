@@ -1,4 +1,4 @@
-import { customFetch } from "@workspace/api-client-react";
+import { apiFetch } from "./api-fetch";
 
 export interface Category {
   id: string;
@@ -39,52 +39,33 @@ export interface UpdateCategoryInput {
 }
 
 export async function getCategories() {
-  const response = await customFetch<ApiListResponse<Category[]>>("/api/categories", {
-    method: "GET",
-    responseType: "json",
-  });
-
+  const response = await apiFetch<ApiListResponse<Category[]>>("/api/categories");
   return response.data;
 }
 
 export async function getCategory(id: string) {
-  const response = await customFetch<ApiResponse<Category & { articles: any[] }>>(
-    `/api/categories/${id}`,
-    {
-      method: "GET",
-      responseType: "json",
-    }
-  );
-
+  const response = await apiFetch<ApiResponse<Category & { articles: any[] }>>(`/api/categories/${id}`);
   return response.data;
 }
 
 export async function createCategory(input: CreateCategoryInput) {
-  const response = await customFetch<ApiResponse<Category>>("/api/categories", {
+  const response = await apiFetch<ApiResponse<Category>>("/api/categories", {
     method: "POST",
     body: JSON.stringify(input),
-    responseType: "json",
   });
-
   return response.data;
 }
 
 export async function updateCategory(id: string, input: UpdateCategoryInput) {
-  const response = await customFetch<ApiResponse<Category>>(
-    `/api/categories/${id}`,
-    {
-      method: "PATCH",
-      body: JSON.stringify(input),
-      responseType: "json",
-    }
-  );
-
+  const response = await apiFetch<ApiResponse<Category>>(`/api/categories/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
   return response.data;
 }
 
 export async function deleteCategory(id: string) {
-  await customFetch<ApiResponse<never>>(`/api/categories/${id}`, {
+  await apiFetch<ApiResponse<never>>(`/api/categories/${id}`, {
     method: "DELETE",
-    responseType: "json",
   });
 }

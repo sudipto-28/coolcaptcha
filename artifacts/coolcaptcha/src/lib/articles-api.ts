@@ -1,4 +1,4 @@
-import { customFetch } from "@workspace/api-client-react";
+import { apiFetch } from "./api-fetch";
 
 export interface Article {
   id: string;
@@ -125,49 +125,32 @@ export async function getArticles(params?: GetArticlesParams): Promise<ApiListRe
   if (params?.limit) queryParams.append("limit", String(params.limit));
 
   const url = `/api/articles${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
-  const response = await customFetch<ApiListResponse<Article[]>>(url, {
-    method: "GET",
-    responseType: "json",
-  });
-
-  return response;
+  return apiFetch<ApiListResponse<Article[]>>(url);
 }
 
 export async function getArticle(id: string) {
-  const response = await customFetch<ApiResponse<Article>>(`/api/articles/${id}`, {
-    method: "GET",
-    responseType: "json",
-  });
-
+  const response = await apiFetch<ApiResponse<Article>>(`/api/articles/${id}`);
   return response.data;
 }
 
 export async function createArticle(input: CreateArticleInput) {
-  const response = await customFetch<ApiResponse<Article>>("/api/articles", {
+  const response = await apiFetch<ApiResponse<Article>>("/api/articles", {
     method: "POST",
     body: JSON.stringify(input),
-    responseType: "json",
   });
-
   return response.data;
 }
 
 export async function updateArticle(id: string, input: UpdateArticleInput) {
-  const response = await customFetch<ApiResponse<Article>>(
-    `/api/articles/${id}`,
-    {
-      method: "PATCH",
-      body: JSON.stringify(input),
-      responseType: "json",
-    }
-  );
-
+  const response = await apiFetch<ApiResponse<Article>>(`/api/articles/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
   return response.data;
 }
 
 export async function deleteArticle(id: string) {
-  await customFetch<ApiResponse<never>>(`/api/articles/${id}`, {
+  await apiFetch<ApiResponse<never>>(`/api/articles/${id}`, {
     method: "DELETE",
-    responseType: "json",
   });
 }

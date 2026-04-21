@@ -1,4 +1,4 @@
-import { customFetch } from "@workspace/api-client-react";
+import { apiFetch } from "./api-fetch";
 
 export interface Source {
   id: string;
@@ -43,37 +43,28 @@ export interface UpdateSourceInput {
 }
 
 export async function getSources() {
-  const response = await customFetch<ApiListResponse<Source[]>>("/api/sources", {
-    method: "GET",
-    responseType: "json",
-  });
-
+  const response = await apiFetch<ApiListResponse<Source[]>>("/api/sources");
   return response.data;
 }
 
 export async function createSource(input: CreateSourceInput) {
-  const response = await customFetch<ApiResponse<Source>>("/api/sources", {
+  const response = await apiFetch<ApiResponse<Source>>("/api/sources", {
     method: "POST",
     body: JSON.stringify(input),
-    responseType: "json",
   });
-
   return response.data;
 }
 
 export async function deleteSource(id: string) {
-  await customFetch<ApiResponse<never>>(`/api/sources/${id}`, {
+  await apiFetch<ApiResponse<never>>(`/api/sources/${id}`, {
     method: "DELETE",
-    responseType: "json",
   });
 }
 
 export async function updateSource(id: string, input: UpdateSourceInput) {
-  const response = await customFetch<ApiResponse<Source>>(`/api/sources/${id}`, {
+  const response = await apiFetch<ApiResponse<Source>>(`/api/sources/${id}`, {
     method: "PUT",
     body: JSON.stringify(input),
-    responseType: "json",
   });
-
   return response.data;
 }

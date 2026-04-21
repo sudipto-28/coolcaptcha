@@ -1,4 +1,4 @@
-import { customFetch } from "@workspace/api-client-react";
+import { apiFetch } from "./api-fetch";
 
 export interface User {
   id: string;
@@ -16,9 +16,6 @@ interface ApiResponse<T> {
 }
 
 export async function getUsers(): Promise<User[]> {
-  const response = await customFetch<ApiResponse<User[]>>("/api/users", {
-    method: "GET",
-  });
-
+  const response = await apiFetch<ApiResponse<User[]>>("/api/users");
   return response.users || response.data || [];
 }

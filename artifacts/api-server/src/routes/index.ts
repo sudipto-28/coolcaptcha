@@ -8,6 +8,7 @@ import authRouter from "./auth/auth.route";
 import publicRouter from "./public";
 import feedsRouter from "./feeds/feeds.route";
 import redirectUrlRouter from "./redirect-urls/redirect-url.route";
+import statsRouter from "./stats/stats.route";
 
 const router: IRouter = Router();
 
@@ -47,6 +48,10 @@ const routes = [
   {
     path: "/redirect-urls",
     route: redirectUrlRouter,
+  },
+  {
+    path: "/stats",
+    route: statsRouter,
   },
 ];
 

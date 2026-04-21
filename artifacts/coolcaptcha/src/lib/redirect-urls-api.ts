@@ -1,4 +1,4 @@
-import { customFetch } from "@workspace/api-client-react";
+import { apiFetch } from "./api-fetch";
 
 export interface RedirectUrl {
   id: string;
@@ -31,49 +31,33 @@ export interface UpdateRedirectUrlInput {
 }
 
 export async function getRedirectUrls() {
-  const response = await customFetch<ApiResponse<RedirectUrl[]>>("/api/redirect-urls", {
-    method: "GET",
-    responseType: "json",
-  });
-
+  const response = await apiFetch<ApiResponse<RedirectUrl[]>>("/api/redirect-urls");
   return response.data;
 }
 
 export async function getRedirectUrl(id: string) {
-  const response = await customFetch<ApiResponse<RedirectUrl>>(`/api/redirect-urls/${id}`, {
-    method: "GET",
-    responseType: "json",
-  });
-
+  const response = await apiFetch<ApiResponse<RedirectUrl>>(`/api/redirect-urls/${id}`);
   return response.data;
 }
 
 export async function createRedirectUrl(input: CreateRedirectUrlInput) {
-  const response = await customFetch<ApiResponse<RedirectUrl>>("/api/redirect-urls", {
+  const response = await apiFetch<ApiResponse<RedirectUrl>>("/api/redirect-urls", {
     method: "POST",
     body: JSON.stringify(input),
-    responseType: "json",
   });
-
   return response.data;
 }
 
 export async function updateRedirectUrl(id: string, input: UpdateRedirectUrlInput) {
-  const response = await customFetch<ApiResponse<RedirectUrl>>(
-    `/api/redirect-urls/${id}`,
-    {
-      method: "PATCH",
-      body: JSON.stringify(input),
-      responseType: "json",
-    }
-  );
-
+  const response = await apiFetch<ApiResponse<RedirectUrl>>(`/api/redirect-urls/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
   return response.data;
 }
 
 export async function deleteRedirectUrl(id: string) {
-  await customFetch<ApiResponse<never>>(`/api/redirect-urls/${id}`, {
+  await apiFetch<ApiResponse<never>>(`/api/redirect-urls/${id}`, {
     method: "DELETE",
-    responseType: "json",
   });
 }
