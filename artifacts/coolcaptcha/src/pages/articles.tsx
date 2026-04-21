@@ -11,7 +11,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ArticleFeed } from "@/components/articles/article-feed";
+import { ArticleDetail } from "@/components/articles/article-detail";
 import { Layout } from "@/components/layout/layout";
+import { ApiArticle } from "@/components/articles/article-data";
 
 // ===================== CAPTCHA SHELL =====================
 
@@ -334,6 +336,7 @@ export default function Articles() {
   const [step, setStep] = useState(1);
   const [url, setUrl] = useState("");
   const [captchaKey, setCaptchaKey] = useState(0);
+  const [selectedArticle, setSelectedArticle] = useState<ApiArticle | null>(null);
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -350,6 +353,15 @@ export default function Articles() {
     setStep(1);
     setUrl("");
     setCaptchaKey((k) => k + 1);
+    setSelectedArticle(null);
+  };
+
+  const handleArticleClick = (article: ApiArticle) => {
+    setSelectedArticle(article);
+  };
+
+  const handleBackToFeed = () => {
+    setSelectedArticle(null);
   };
 
   return (
@@ -377,7 +389,7 @@ export default function Articles() {
           <div className="flex flex-col lg:flex-row gap-10 items-start">
 
             {/* Left: Steps */}
-            <div className="lg:w-72 shrink-0 space-y-4">
+            {/* <div className="lg:w-72 shrink-0 space-y-4">
               {[
                 { n: 1, title: "Configure Target", desc: "Enter the domain you want to protect." },
                 { n: 2, title: "Solve Challenge", desc: "Complete a random puzzle to verify." },
@@ -431,7 +443,7 @@ export default function Articles() {
                   Each verification shows a random challenge type. Use the <RefreshCw size={10} className="inline" /> button to get a new one.
                 </p>
               )}
-            </div>
+            </div> */}
 
             {/* Right: Simulated Verification Page */}
             <div className="flex-1 w-full">
@@ -487,7 +499,14 @@ export default function Articles() {
                     </AnimatePresence>
                   </div>
 
-                  <ArticleFeed />
+                  {selectedArticle ? (
+                    <ArticleDetail
+                      slug={selectedArticle.slug}
+                      onBack={handleBackToFeed}
+                    />
+                  ) : (
+                    <ArticleFeed onArticleClick={handleArticleClick} />
+                  )}
                 </div>
               </div>
             </div>

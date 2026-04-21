@@ -1,3 +1,64 @@
+// API response types matching the public API
+export interface ApiCategory {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface ApiAuthor {
+  id: string;
+  name: string;
+}
+
+export interface ApiSource {
+  id: string;
+  name: string;
+  websiteUrl?: string;
+}
+
+export interface ApiArticle {
+  id: string;
+  status: string;
+  categoryId?: string;
+  title: string;
+  slug: string;
+  aiSummary?: string;
+  summaryPoints?: string[];
+  featuredImage?: string;
+  isFeatured: boolean;
+  publishedAt?: string;
+  sourceName?: string;
+  sourceUrl?: string;
+  category?: ApiCategory;
+  author?: ApiAuthor;
+  source?: ApiSource;
+}
+
+export interface ArticlesResponse {
+  success: boolean;
+  message: string;
+  data: ApiArticle[];
+  metadata: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    timestamp: string;
+  };
+}
+
+export interface ArticleResponse {
+  success: boolean;
+  message: string;
+  data: ApiArticle;
+  metadata: {
+    timestamp: string;
+  };
+}
+
+// Legacy static data for fallback
 export const articles = [
   {
     category: "Technology",

@@ -5,6 +5,8 @@ import sourceRouter from "./sources/source.route";
 import categoryRouter from "./categories/category.route";
 import articleRouter from "./articles/article.route";
 import authRouter from "./auth/auth.route";
+import publicRouter from "./public";
+import feedsRouter from "./feeds/feeds.route";
 
 const router: IRouter = Router();
 
@@ -32,6 +34,14 @@ const routes = [
   {
     path: "/auth",
     route: authRouter,
+  },
+  {
+    path: "/public",
+    route: publicRouter,
+  },
+  {
+    path: "/feeds",
+    route: feedsRouter,
   },
 ];
 

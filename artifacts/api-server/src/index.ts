@@ -1,12 +1,13 @@
 import "dotenv/config";
 import app from "./app";
 import { logger } from "./lib/logger";
+import { cronService } from "./services/cron.service";
 
 const rawPort = process.env["PORT"];
 
 if (!rawPort) {
   throw new Error(
-    "PORT environment variable is required but was not provided.",
+    "PORT environment variable is required but was not provided."
   );
 }
 
@@ -23,4 +24,6 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  cronService.start();
 });

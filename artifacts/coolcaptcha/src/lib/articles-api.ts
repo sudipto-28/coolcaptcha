@@ -114,7 +114,7 @@ export interface GetArticlesParams {
   limit?: number;
 }
 
-export async function getArticles(params?: GetArticlesParams) {
+export async function getArticles(params?: GetArticlesParams): Promise<ApiListResponse<Article[]>> {
   const queryParams = new URLSearchParams();
   if (params?.status) queryParams.append("status", params.status);
   if (params?.categoryId) queryParams.append("categoryId", params.categoryId);
@@ -130,7 +130,7 @@ export async function getArticles(params?: GetArticlesParams) {
     responseType: "json",
   });
 
-  return response.data;
+  return response;
 }
 
 export async function getArticle(id: string) {
