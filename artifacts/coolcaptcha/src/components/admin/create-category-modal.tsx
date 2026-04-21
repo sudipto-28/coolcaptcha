@@ -1,43 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, FolderTree } from "lucide-react";
+import { X, FolderTree, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const colorOptions = [
-  { value: "blue", label: "Blue", class: "bg-blue-500" },
-  { value: "green", label: "Green", class: "bg-green-500" },
-  { value: "violet", label: "Violet", class: "bg-violet-500" },
-  { value: "orange", label: "Orange", class: "bg-orange-500" },
-  { value: "rose", label: "Rose", class: "bg-rose-500" },
-];
 
 interface CreateCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { name: string; slug: string; description: string; color: string }) => void;
+  onSubmit: (data: { name: string; description: string }) => Promise<void> | void;
+  categoryToEdit?: { name: string; description: string } | null;
 }
 
-export const CreateCategoryModal = ({ isOpen, onClose, onSubmit }: CreateCategoryModalProps) => {
+export const CreateCategoryModal = ({ isOpen, onClose, onSubmit, categoryToEdit }: CreateCategoryModalProps) => {
   const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
-  const [color, setColor] = useState("blue");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Populate form when editing
+  useEffect(() => {
+    if (categoryToEdit) {
+      setName(categoryToEdit.name);
+      setDescription(categoryToEdit.description || "");
+    } else {
+      setName("");
+      setDescription("");
+    }
+  }, [categoryToEdit, isOpen]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !slug) return;
-    onSubmit({ name, slug, description, color });
-    setName("");
-    setSlug("");
-    setDescription("");
-    setColor("blue");
-    onClose();
-  };
+    if (!name) return;
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setName(value);
-    setSlug(value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""));
+    setIsLoading(true);
+    setError("");
+
+    try {
+      await onSubmit({ name, description });
+      setName("");
+      setDescription("");
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create category");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -64,8 +70,8 @@ export const CreateCategoryModal = ({ isOpen, onClose, onSubmit }: CreateCategor
                 <FolderTree className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold">Add Category</h2>
-                <p className="text-sm text-muted-foreground">Create a new article category</p>
+                <h2 className="text-lg font-semibold">{categoryToEdit ? "Edit Category" : "Add Category"}</h2>
+                <p className="text-sm text-muted-foreground">{categoryToEdit ? "Update article category" : "Create a new article category"}</p>
               </div>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 hover:bg-white/10">
@@ -81,18 +87,7 @@ export const CreateCategoryModal = ({ isOpen, onClose, onSubmit }: CreateCategor
                 placeholder="e.g., Technology"
                 className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
                 value={name}
-                onChange={handleNameChange}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Slug</label>
-              <input
-                type="text"
-                required
-                placeholder="technology"
-                className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors font-mono"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""))}
+                onChange={(e) => setName(e.target.value)}
               />
             </div>
             <div>
@@ -105,30 +100,37 @@ export const CreateCategoryModal = ({ isOpen, onClose, onSubmit }: CreateCategor
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Color</label>
-              <div className="flex gap-2">
-                {colorOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setColor(option.value)}
-                    className={`w-10 h-10 rounded-lg border-2 transition-all ${
-                      color === option.value
-                        ? `${option.class} border-white scale-110`
-                        : `${option.class} border-transparent opacity-50 hover:opacity-100 hover:scale-105`
-                    }`}
-                    title={option.label}
-                  />
-                ))}
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2.5 rounded-lg text-sm">
+                {error}
               </div>
-            </div>
+            )}
             <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1 border-white/20 hover:bg-white/5">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setError("");
+                  onClose();
+                }}
+                disabled={isLoading}
+                className="flex-1 border-white/20 hover:bg-white/5"
+              >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
-                Add Category
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {categoryToEdit ? "Updating..." : "Adding..."}
+                  </>
+                ) : (
+                  categoryToEdit ? "Update Category" : "Add Category"
+                )}
               </Button>
             </div>
           </form>

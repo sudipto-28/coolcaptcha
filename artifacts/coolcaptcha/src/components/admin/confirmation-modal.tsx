@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void> | void;
   title: string;
   message: string;
   confirmText?: string;
@@ -84,9 +84,13 @@ export const ConfirmationModal = ({
             </Button>
             <Button
               type="button"
-              onClick={() => {
-                onConfirm();
-                onClose();
+              onClick={async () => {
+                try {
+                  await onConfirm();
+                  onClose();
+                } catch {
+                  // The caller owns surfacing async errors.
+                }
               }}
               className={`flex-1 ${
                 isDanger

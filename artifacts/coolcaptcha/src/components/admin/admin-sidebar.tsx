@@ -7,8 +7,10 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/auth-context";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
@@ -24,6 +26,7 @@ interface AdminSidebarProps {
 
 export const AdminSidebar = ({ collapsed, onToggle }: AdminSidebarProps) => {
   const [location] = useLocation();
+  const { user, logout } = useAuth();
 
   return (
     <aside
@@ -78,14 +81,23 @@ export const AdminSidebar = ({ collapsed, onToggle }: AdminSidebarProps) => {
         <div className="p-4 border-t border-white/10">
           <div className={`flex items-center gap-3 ${collapsed ? "justify-center" : ""}`}>
             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-              A
+              {user?.name?.[0] || user?.email[0] || "A"}
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">Admin</p>
-                <p className="text-xs text-muted-foreground truncate">admin@coolcaptcha.com</p>
+                <p className="text-sm font-medium truncate">{user?.name || "Admin"}</p>
+                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
               </div>
             )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={logout}
+              className="text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </div>

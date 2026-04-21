@@ -1,81 +1,129 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Search, MoreVertical, Edit, Trash2, Eye, Clock } from "lucide-react";
+import { Plus, Search, MoreVertical, Edit, Trash2, Eye, Clock, Loader2, RefreshCw } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { ConfirmationModal } from "@/components/admin/confirmation-modal";
+import { CreateArticleModal } from "@/components/admin/create-article-modal";
+import { createArticle, deleteArticle, getArticles, updateArticle } from "@/lib/articles-api";
+import type { Article, CreateArticleInput, UpdateArticleInput } from "@/lib/articles-api";
+import { useToast } from "@/hooks/use-toast";
 
-const articles = [
-  {
-    id: 1,
-    title: "How AI is reshaping cybersecurity in 2025",
-    category: "Technology",
-    status: "Published",
-    readTime: "4 min read",
-    publishedAt: "2025-04-15",
-    views: 1234,
-  },
-  {
-    id: 2,
-    title: "DeFi protocols see record bot activity following market rally",
-    category: "Finance",
-    status: "Published",
-    readTime: "3 min read",
-    publishedAt: "2025-04-14",
-    views: 856,
-  },
-  {
-    id: 3,
-    title: "The anatomy of a credential stuffing attack",
-    category: "Security",
-    status: "Published",
-    readTime: "6 min read",
-    publishedAt: "2025-04-13",
-    views: 2341,
-  },
-  {
-    id: 4,
-    title: "Building abuse-resilient APIs: lessons from scale",
-    category: "Engineering",
-    status: "Draft",
-    readTime: "5 min read",
-    publishedAt: null,
-    views: 0,
-  },
-  {
-    id: 5,
-    title: "Ticketing platforms battle bots ahead of playoff season",
-    category: "Sports",
-    status: "Published",
-    readTime: "2 min read",
-    publishedAt: "2025-04-12",
-    views: 567,
-  },
-];
+const articlesQueryKey = ["articles"] as const;
 
 export default function AdminArticles() {
+  const { toast } = useToast();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [articleToDelete, setArticleToDelete] = useState<number | null>(null);
+  const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
+  const [articleToEdit, setArticleToEdit] = useState<Article | null>(null);
+
+  const {
+    data: articles = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useQuery({
+    queryKey: articlesQueryKey,
+    queryFn: () => getArticles(),
+  });
+
+  const deleteArticleMutation = useMutation({
+    mutationFn: (id: string) => deleteArticle(id),
+    onSuccess: async () => {
+      await refetch();
+      toast({
+        title: "Article deleted",
+        description: "The article has been removed.",
+      });
+    },
+    onError: (deleteError) => {
+      toast({
+        title: "Could not delete article",
+        description: deleteError instanceof Error ? deleteError.message : "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createArticleMutation = useMutation({
+    mutationFn: (data: CreateArticleInput) => createArticle(data),
+    onSuccess: async () => {
+      await refetch();
+      toast({
+        title: "Article created",
+        description: "The new article is ready to use.",
+      });
+    },
+    onError: (createError) => {
+      toast({
+        title: "Could not create article",
+        description: createError instanceof Error ? createError.message : "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateArticleMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateArticleInput }) => updateArticle(id, data),
+    onSuccess: async () => {
+      await refetch();
+      toast({
+        title: "Article updated",
+        description: "The article has been updated successfully.",
+      });
+    },
+    onError: (updateError) => {
+      toast({
+        title: "Could not update article",
+        description: updateError instanceof Error ? updateError.message : "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const filteredArticles = articles.filter(
-    (article) =>
+    (article: Article) =>
       article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.category.toLowerCase().includes(searchQuery.toLowerCase())
+      (article.category?.name || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleDeleteArticle = (id: number) => {
-    setArticleToDelete(id);
+  const handleDeleteArticle = (article: Article) => {
+    setArticleToDelete(article);
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDeleteArticle = () => {
+  const confirmDeleteArticle = async () => {
     if (articleToDelete) {
-      console.log("Deleting article:", articleToDelete);
-      // TODO: Add API call to delete article
+      await deleteArticleMutation.mutateAsync(articleToDelete.id);
       setArticleToDelete(null);
     }
+  };
+
+  const handleAddArticle = async (data: CreateArticleInput) => {
+    await createArticleMutation.mutateAsync(data);
+  };
+
+  const handleEditArticle = (article: Article) => {
+    setArticleToEdit(article);
+    setIsModalOpen(true);
+  };
+
+  const handleUpdateArticle = async (data: CreateArticleInput) => {
+    if (articleToEdit) {
+      await updateArticleMutation.mutateAsync({ id: articleToEdit.id, data });
+      setArticleToEdit(null);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setArticleToEdit(null);
   };
 
   return (
@@ -90,10 +138,22 @@ export default function AdminArticles() {
               <h1 className="text-2xl font-bold">Articles</h1>
               <p className="text-sm text-muted-foreground">Manage your article content</p>
             </div>
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Article
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => refetch()}
+                disabled={isFetching}
+                className="border-white/20 hover:bg-white/5"
+                title="Refresh articles"
+              >
+                <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`} />
+              </Button>
+              <Button onClick={() => setIsModalOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Article
+              </Button>
+            </div>
           </div>
         </header>
 
@@ -125,53 +185,88 @@ export default function AdminArticles() {
                   <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Title</th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Category</th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Status</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Read Time</th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Published</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Views</th>
                   <th className="text-right px-6 py-4 text-sm font-semibold text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredArticles.map((article) => (
+                {isLoading && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-muted-foreground">
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Loading articles...
+                      </div>
+                    </td>
+                  </tr>
+                )}
+
+                {isError && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center">
+                      <div className="space-y-3">
+                        <p className="text-sm text-red-400">
+                          {error instanceof Error ? error.message : "Failed to load articles"}
+                        </p>
+                        <Button variant="outline" onClick={() => refetch()} className="border-white/20 hover:bg-white/5">
+                          Try Again
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+
+                {!isLoading && !isError && filteredArticles.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-muted-foreground">
+                      {searchQuery ? "No articles match your search." : "No articles have been added yet."}
+                    </td>
+                  </tr>
+                )}
+
+                {!isLoading && !isError && filteredArticles.map((article: Article) => (
                   <tr key={article.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4">
                       <div className="font-medium max-w-md">{article.title}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm">{article.category}</span>
+                      <span className="text-sm">{article.category?.name || "-"}</span>
                     </td>
                     <td className="px-6 py-4">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          article.status === "Published"
+                          article.status === "PUBLISHED"
                             ? "bg-green-500/10 text-green-400"
-                            : "bg-yellow-500/10 text-yellow-400"
+                            : article.status === "DRAFT"
+                            ? "bg-yellow-500/10 text-yellow-400"
+                            : "bg-gray-500/10 text-gray-400"
                         }`}
                       >
                         {article.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {article.readTime}
-                    </td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {article.publishedAt || "-"}
+                      {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : "-"}
                     </td>
-                    <td className="px-6 py-4 text-sm">{article.views}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white/10">
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white/10">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-white/10"
+                          onClick={() => handleEditArticle(article)}
+                          disabled={updateArticleMutation.isPending}
+                        >
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 hover:bg-red-500/10 hover:text-red-400"
-                          onClick={() => handleDeleteArticle(article.id)}
+                          onClick={() => handleDeleteArticle(article)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -187,12 +282,34 @@ export default function AdminArticles() {
 
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setArticleToDelete(null);
+        }}
         onConfirm={confirmDeleteArticle}
         title="Delete Article"
-        message="Are you sure you want to delete this article? This action cannot be undone."
-        confirmText="Delete"
+        message={`Are you sure you want to delete "${articleToDelete?.title ?? "this article"}"? This action cannot be undone.`}
+        confirmText={deleteArticleMutation.isPending ? "Deleting..." : "Delete"}
         variant="danger"
+      />
+
+      <CreateArticleModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSubmit={articleToEdit ? handleUpdateArticle : handleAddArticle}
+        articleToEdit={
+          articleToEdit
+            ? {
+                authorId: articleToEdit.authorId,
+                title: articleToEdit.title,
+                excerpt: articleToEdit.excerpt || undefined,
+                content: articleToEdit.content || undefined,
+                status: articleToEdit.status,
+                categoryId: articleToEdit.categoryId || undefined,
+                sourceId: articleToEdit.sourceId || undefined,
+              }
+            : null
+        }
       />
     </div>
   );

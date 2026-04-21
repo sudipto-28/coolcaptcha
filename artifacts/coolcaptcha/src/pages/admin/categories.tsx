@@ -1,56 +1,115 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Search, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { Plus, MoreVertical, Edit, Trash2, Loader2, RefreshCw } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { CreateCategoryModal } from "@/components/admin/create-category-modal";
 import { ConfirmationModal } from "@/components/admin/confirmation-modal";
+import { createCategory, deleteCategory, getCategories, updateCategory } from "@/lib/categories-api";
+import type { Category, CreateCategoryInput, UpdateCategoryInput } from "@/lib/categories-api";
+import { useToast } from "@/hooks/use-toast";
 
-const categories = [
-  { id: 1, name: "Technology", slug: "technology", description: "Tech news and updates", articleCount: 45, color: "blue" },
-  { id: 2, name: "Finance", slug: "finance", description: "Financial news and markets", articleCount: 32, color: "green" },
-  { id: 3, name: "Security", slug: "security", description: "Cybersecurity articles", articleCount: 28, color: "violet" },
-  { id: 4, name: "Engineering", slug: "engineering", description: "Engineering insights", articleCount: 19, color: "orange" },
-  { id: 5, name: "Sports", slug: "sports", description: "Sports news and updates", articleCount: 15, color: "rose" },
-];
-
-const colorMap: Record<string, string> = {
-  blue: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  green: "bg-green-500/10 text-green-400 border-green-500/20",
-  violet: "bg-violet-500/10 text-violet-400 border-violet-500/20",
-  orange: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  rose: "bg-rose-500/10 text-rose-400 border-rose-500/20",
-};
+const categoriesQueryKey = ["categories"] as const;
 
 export default function Categories() {
+  const { toast } = useToast();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
 
-  const filteredCategories = categories.filter(
-    (category) =>
-      category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      category.slug.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const {
+    data: categories = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useQuery({
+    queryKey: categoriesQueryKey,
+    queryFn: getCategories,
+  });
 
-  const handleAddCategory = (data: { name: string; slug: string; description: string; color: string }) => {
-    console.log("Adding category:", data);
-    // TODO: Add API call to create category
+  const createCategoryMutation = useMutation({
+    mutationFn: (data: CreateCategoryInput) => createCategory(data),
+    onSuccess: async () => {
+      await refetch();
+      toast({
+        title: "Category added",
+        description: "The new category is ready to use.",
+      });
+    },
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: (id: string) => deleteCategory(id),
+    onSuccess: async () => {
+      await refetch();
+      toast({
+        title: "Category deleted",
+        description: "The category has been removed.",
+      });
+    },
+    onError: (deleteError) => {
+      toast({
+        title: "Could not delete category",
+        description: deleteError instanceof Error ? deleteError.message : "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateCategoryMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateCategoryInput }) => updateCategory(id, data),
+    onSuccess: async () => {
+      await refetch();
+      toast({
+        title: "Category updated",
+        description: "The category has been updated successfully.",
+      });
+    },
+    onError: (updateError) => {
+      toast({
+        title: "Could not update category",
+        description: updateError instanceof Error ? updateError.message : "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddCategory = async (data: CreateCategoryInput) => {
+    await createCategoryMutation.mutateAsync(data);
   };
 
-  const handleDeleteCategory = (id: number) => {
-    setCategoryToDelete(id);
+  const handleEditCategory = (category: Category) => {
+    setCategoryToEdit(category);
+    setIsModalOpen(true);
+  };
+
+  const handleUpdateCategory = async (data: CreateCategoryInput) => {
+    if (categoryToEdit) {
+      await updateCategoryMutation.mutateAsync({ id: categoryToEdit.id, data });
+      setCategoryToEdit(null);
+    }
+  };
+
+  const handleDeleteCategory = (category: Category) => {
+    setCategoryToDelete(category);
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDeleteCategory = () => {
+  const confirmDeleteCategory = async () => {
     if (categoryToDelete) {
-      console.log("Deleting category:", categoryToDelete);
-      // TODO: Add API call to delete category
+      await deleteCategoryMutation.mutateAsync(categoryToDelete.id);
       setCategoryToDelete(null);
     }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setCategoryToEdit(null);
   };
 
   return (
@@ -65,29 +124,27 @@ export default function Categories() {
               <h1 className="text-2xl font-bold">Categories</h1>
               <p className="text-sm text-muted-foreground">Manage article categories</p>
             </div>
-            <Button onClick={() => setIsModalOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Category
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => refetch()}
+                disabled={isFetching}
+                className="border-white/20 hover:bg-white/5"
+                title="Refresh categories"
+              >
+                <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`} />
+              </Button>
+              <Button onClick={() => setIsModalOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Category
+              </Button>
+            </div>
           </div>
         </header>
 
         {/* Content */}
         <div className="p-6">
-          {/* Search */}
-          <div className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search categories..."
-                className="w-full bg-black/50 border border-white/20 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-
           {/* Table */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -100,13 +157,46 @@ export default function Categories() {
                   <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Name</th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Slug</th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Description</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Color</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Articles</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-muted-foreground">Status</th>
                   <th className="text-right px-6 py-4 text-sm font-semibold text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredCategories.map((category) => (
+                {isLoading && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-muted-foreground">
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Loading categories...
+                      </div>
+                    </td>
+                  </tr>
+                )}
+
+                {isError && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center">
+                      <div className="space-y-3">
+                        <p className="text-sm text-red-400">
+                          {error instanceof Error ? error.message : "Failed to load categories"}
+                        </p>
+                        <Button variant="outline" onClick={() => refetch()} className="border-white/20 hover:bg-white/5">
+                          Try Again
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+
+                {!isLoading && !isError && categories.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-muted-foreground">
+                      No categories have been added yet.
+                    </td>
+                  </tr>
+                )}
+
+                {!isLoading && !isError && categories.map((category: Category) => (
                   <tr key={category.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4">
                       <div className="font-medium">{category.name}</div>
@@ -119,22 +209,31 @@ export default function Categories() {
                     <td className="px-6 py-4 text-sm text-muted-foreground">{category.description}</td>
                     <td className="px-6 py-4">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium border ${colorMap[category.color]}`}
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          category.isFilterable
+                            ? "bg-green-500/10 text-green-400"
+                            : "bg-gray-500/10 text-gray-400"
+                        }`}
                       >
-                        {category.color}
+                        {category.isFilterable ? "Filterable" : "Hidden"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm">{category.articleCount}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white/10">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-white/10"
+                          onClick={() => handleEditCategory(category)}
+                          disabled={updateCategoryMutation.isPending}
+                        >
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 hover:bg-red-500/10 hover:text-red-400"
-                          onClick={() => handleDeleteCategory(category.id)}
+                          onClick={() => handleDeleteCategory(category)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -150,17 +249,21 @@ export default function Categories() {
 
       <CreateCategoryModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddCategory}
+        onClose={handleCloseModal}
+        onSubmit={categoryToEdit ? handleUpdateCategory : handleAddCategory}
+        categoryToEdit={categoryToEdit ? { name: categoryToEdit.name, description: categoryToEdit.description || "" } : null}
       />
 
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setCategoryToDelete(null);
+        }}
         onConfirm={confirmDeleteCategory}
         title="Delete Category"
-        message="Are you sure you want to delete this category? This action cannot be undone."
-        confirmText="Delete"
+        message={`Are you sure you want to delete ${categoryToDelete?.name ?? "this category"}? This action cannot be undone.`}
+        confirmText={deleteCategoryMutation.isPending ? "Deleting..." : "Delete"}
         variant="danger"
       />
     </div>
