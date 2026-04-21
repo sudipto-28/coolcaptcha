@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Zap, Loader2 } from "lucide-react";
+import { Zap, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { articles, ApiArticle, ArticlesResponse } from "./article-data";
 import { ArticleCard } from "./article-card";
 
@@ -11,15 +11,29 @@ export const ArticleFeed = ({ onArticleClick }: ArticleFeedProps) => {
   const [apiArticles, setApiArticles] = useState<ApiArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(6);
+  const [pagination, setPagination] = useState<{
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  } | null>(null);
 
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const response = await fetch("/api/public/articles?limit=6");
+        setLoading(true);
+        const response = await fetch(
+          `/api/public/articles?page=${currentPage}&limit=${itemsPerPage}`
+        );
         const data: ArticlesResponse = await response.json();
 
         if (data.success) {
           setApiArticles(data.data);
+          setPagination(data.metadata || null);
         } else {
           throw new Error(data.message || "Failed to fetch articles");
         }
@@ -32,9 +46,21 @@ export const ArticleFeed = ({ onArticleClick }: ArticleFeedProps) => {
     };
 
     fetchArticles();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   const displayArticles = apiArticles.length > 0 ? apiArticles : articles;
+
+  const handlePreviousPage = () => {
+    if (pagination?.hasPreviousPage) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (pagination?.hasNextPage) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
 
   return (
     <div className="w-full mt-12">
@@ -55,16 +81,46 @@ export const ArticleFeed = ({ onArticleClick }: ArticleFeedProps) => {
           <Loader2 className="w-8 h-8 text-primary animate-spin" />
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5">
-          {displayArticles.map((article, i) => (
-            <ArticleCard
-              key={"id" in article ? (article as ApiArticle).id : i}
-              article={article}
-              index={i}
-              onClick={onArticleClick}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+            {displayArticles.map((article, i) => (
+              <ArticleCard
+                key={"id" in article ? (article as ApiArticle).id : i}
+                article={article}
+                index={i}
+                onClick={onArticleClick}
+              />
+            ))}
+          </div>
+
+          {pagination && (
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <button
+                onClick={handlePreviousPage}
+                disabled={!pagination.hasPreviousPage}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </button>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Page</span>
+                <span className="font-medium text-foreground">{pagination.page}</span>
+                <span>of</span>
+                <span className="font-medium text-foreground">{pagination.totalPages}</span>
+                <span className="text-muted-foreground">({pagination.total} total)</span>
+              </div>
+              <button
+                onClick={handleNextPage}
+                disabled={!pagination.hasNextPage}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-colors"
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {error && (
