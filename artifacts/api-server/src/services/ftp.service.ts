@@ -3,6 +3,17 @@ import { Readable } from 'node:stream';
 import { Client } from 'basic-ftp';
 import sharp from 'sharp';
 
+/**
+ * Gets today's date in YYYYMMDD format for daily folder structure
+ */
+function getTodayDateString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}${month}${day}`;
+}
+
 export interface UploadImageToFtpOptions {
   imageUrl: string;
   fileNamePrefix?: string;
@@ -25,9 +36,12 @@ function getRequiredEnv(name: string): string {
 }
 
 function normalizeRemoteDir(dir: string | undefined): string {
-  if (!dir) return '/uploads/articles';
+  if (!dir) return '/uploads/coolcaptcha';
   const clean = dir.trim().replace(/\\/g, '/').replace(/\/+$/, '');
-  return clean.startsWith('/') ? clean : `/${clean}`;
+  const baseDir = clean.startsWith('/') ? clean : `/${clean}`;
+  // Append today's date folder for daily uploads
+  const today = getTodayDateString();
+  return `${baseDir}/${today}`;
 }
 
 function buildRemoteFileName(prefix: string | undefined, extension: string): string {
@@ -56,7 +70,7 @@ function readFtpConfig(): FtpConfig {
     baseUrl: getRequiredEnv('FTP_BASE_URL'),
     port: Number(process.env.FTP_PORT || 21),
     secure: process.env.FTP_SECURE === 'true',
-    remoteDir: normalizeRemoteDir(process.env.FTP_REMOTE_DIR || '/uploads/articles'),
+    remoteDir: normalizeRemoteDir(process.env.FTP_REMOTE_DIR || '/uploads/coolcaptcha'),
   };
 }
 
