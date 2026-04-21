@@ -25,5 +25,8 @@ app.listen(port, (err) => {
 
   logger.info({ port }, "Server listening");
 
-  cronService.start();
+  // Only start cron service in production
+  if (process.env.NODE_ENV !== "development") {
+    cronService.start();
+  }
 });
