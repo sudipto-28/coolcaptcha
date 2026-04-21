@@ -28,6 +28,8 @@ export default defineConfig(async ({ mode }) => {
     );
   }
 
+  const apiProxyTarget = env.VITE_API_URL || "http://localhost:8020";
+
   return {
     base: basePath,
     plugins: [
@@ -74,7 +76,7 @@ export default defineConfig(async ({ mode }) => {
       },
       proxy: {
         "/api": {
-          target: "http://localhost:8020",
+          target: apiProxyTarget,
           changeOrigin: true,
           secure: false,
         },
