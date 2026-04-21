@@ -63,7 +63,7 @@ export const ArticleFeed = ({ onArticleClick }: ArticleFeedProps) => {
   };
 
   return (
-    <div className="w-full mt-12">
+    <div className="w-full mt-12 container mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <div className="h-px bg-white/10 flex-1" />
         <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-semibold">

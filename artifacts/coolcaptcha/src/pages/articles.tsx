@@ -502,8 +502,8 @@ export default function Articles() {
       </section>
 
       {/* Demo Section */}
-      <section className="pb-8">
-        <div className="container mx-auto px-6">
+      <section className="pb-8 ">
+        <div className="w-fit mx-auto px-6 md:min-w-4xl">
           <div className="flex flex-col lg:flex-row gap-10 items-start">
 
             {/* Left: Steps */}

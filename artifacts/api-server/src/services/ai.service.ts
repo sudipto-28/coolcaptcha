@@ -40,15 +40,15 @@ Style:
 * Do not sound childish or overly simplified
 * Vary sentence structure and phrasing naturally
 
-Bullet points (IMPORTANT - Make them detailed and explainable):
+Bullet points (IMPORTANT - Keep them concise):
 
-* Each bullet point must be comprehensive and detailed
-* Provide context, background, and explanation for each point
-* Expand on key insights with specific details and examples
-* Aim for 3-5 sentences per bullet point when appropriate
-* Ensure each point stands alone with full context
-* Don't be brief — be thorough and explanatory
-* Help the reader understand the "why" and "how" behind each point
+* Each bullet point must be concise and to the point
+* Provide only the essential information for each point
+* Focus on key insights without excessive details or examples
+* Aim for 1-2 sentences per bullet point, maximum 3 sentences
+* Keep each point brief and direct
+* Be concise — don't over-explain
+* Capture the main idea quickly and clearly
 
 Avoid AI-like writing:
 
@@ -58,7 +58,7 @@ Avoid AI-like writing:
 * Let the writing feel slightly imperfect in a human way
 
 Final refinement (important):
-After writing the bullet points, review each one to ensure it provides sufficient explanation and context. If a point is too brief, expand it with more detail and background information.
+After writing the bullet points, review each one to ensure it's concise and to the point. If a point is too long or exceeds 2-3 sentences, condense it to be more direct and brief.
 
 Important:
 - categoryName must exactly match one of the provided categories

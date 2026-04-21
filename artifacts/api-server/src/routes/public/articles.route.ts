@@ -82,7 +82,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
       .leftJoin(sourcesTable, eq(articlesTable.sourceId, sourcesTable.id))
       .leftJoin(categoriesTable, eq(articlesTable.categoryId, categoriesTable.id))
       .where(whereClause)
-      .orderBy(desc(articlesTable.publishedAt))
+      .orderBy(desc(articlesTable.createdAt))
       .limit(limitNum)
       .offset(offset);
 
